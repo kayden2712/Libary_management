@@ -7,7 +7,7 @@ import Footer from "./components/Footer";
 
 import Home from "./pages/Home";
 import Books from "./pages/Books";
-import Borrow from "./pages/Borrow";
+import Borrows from "./pages/Borrows";
 import Users from "./pages/Users";
 import Profile from "./pages/Profile";
 import AdminPanel from "./pages/AdminPanel";
@@ -47,6 +47,7 @@ export default function App() {
                         <Route path="/login" element={<LoginForm/>}/>
                         <Route path="/register" element={<RegisterForm/>}/>
                         <Route path="/books" element={<Books/>}/>
+                        <Route path="/borrows" element={<Borrows/>}/>
 
                         {/* PROFILE - tất cả các role */}
                         <Route
@@ -91,7 +92,7 @@ export default function App() {
                             path="/borrow"
                             element={
                                 <PrivateRoute roles={["READER", "ADMIN"]}>
-                                    <Borrow/>
+                                    <Borrows/>
                                 </PrivateRoute>
                             }
                         />

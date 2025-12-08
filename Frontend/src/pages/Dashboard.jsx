@@ -174,7 +174,7 @@ export default function Dashboard() {
                 );
             case "borrow":
                 return baseTable(
-                    ["ID", "Book", "Borrow Date", "Due Date", "Status"],
+                    ["ID", "Book", "Borrows Date", "Due Date", "Status"],
                     borrows.map(b => (
                         <tr key={b.borrowId} className="even:bg-amber-50">
                             <td className="border px-2 py-1">{b.borrowId}</td>

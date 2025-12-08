@@ -8,15 +8,32 @@ export const api = axios.create({
 // interceptor request
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('access_token');
-        // Chỉ những route này TUYỆT ĐỐI KHÔNG CẦN token
-        const publicRoutes = ['/auth/login', '/auth/register', '/auth/forgot', '/auth/reset'];
-        // Kiểm tra xem URL hiện tại có nằm trong danh sách public cứng không
-        const isPublicAuthRoute = publicRoutes.some(route => config.url.includes(route));
+        // 1. Tìm token. Ưu tiên lấy từ object 'user' vì log của bạn cho thấy nó nằm ở đó
+        let token = null;
 
-        // Nếu không phải public route và có token → attach Authorization
-        if (!isPublicAuthRoute && token){
-            config.headers['Authorization'] = `Bearer ${token}`;
+        // Thử lấy từ object user
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            try {
+                const userObj = JSON.parse(userStr);
+                token = userObj.token; // Lấy token từ bên trong object
+            } catch (e) {
+                console.error("Lỗi parse JSON user", e);
+            }
+        }
+
+        // Nếu không thấy trong user, thử tìm key lẻ (phòng hờ)
+        if (!token) {
+            token = localStorage.getItem('access_token');
+        }
+
+        // Các route không cần token
+        const publicRoutes = ['/auth/login', '/auth/register', '/auth/forgot'];
+        const isPublic = publicRoutes.some(route => config.url.includes(route));
+
+        // 2. Gắn token vào header
+        if (token && !isPublic) {
+            config.headers.Authorization = `Bearer ${token}`;
         }
 
         return config;
@@ -44,7 +61,6 @@ export const forgotPassword = (payload) => api.post('/auth/forgot', payload);
 
 // --- Books ---
 export const getBooks = (search = "") => api.get('/books', {params: {search}, withCredentials: false});
-export const getBookById = (id) => api.get(`/books/${id}`, {withCredentials: false});
 export const addBook = (payload) => api.post('/books', payload);
 export const updateBook = (id, payload) => api.put(`/books/${id}`, payload);
 export const deleteBook = (id) => api.delete(`/books/${id}`);
@@ -56,10 +72,10 @@ export const addCategory = (payload) => api.post('/categories', payload);
 export const updateCategory = (id, payload) => api.put(`/categories/${id}`, payload);
 export const deleteCategory = (id) => api.delete(`/categories/${id}`);
 
-// --- Borrow / Return (Reader & Staff) ---
-export const borrowBook = (payload) => api.post('/borrow', payload);
-export const returnBook = (payload) => api.post('/return', payload);
-export const getBorrowedBooks = (userId) => api.get(`/borrow/user/${userId}`);
-export const getAllBorrows = () => api.get('/borrow'); // Staff/Admin
-
+// --- Borrows / Return (Reader & Staff) ---
+export const borrowBook = (payload) => api.post(`/borrows`, payload);
+export const returnBook = (id) => api.put(`/borrows/${id}/return`);
+export const deleteBorrow = (id) => api.delete(`/borrows/${id}`);
+export const getBorrowedBooks = (userId) => api.get(`/borrows/user`, { params: { userId } });
+export const getAllBorrows = () => api.get('/borrows');
 export default api;
